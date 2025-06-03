@@ -5,7 +5,7 @@
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
     <title>Wind Animation</title>
 
-    <link rel="stylesheet" href="http://js.arcgis.com/3.8/js/esri/css/esri.css">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.20/esri/css/esri.css">
     <link rel="stylesheet" href="css/style.css">
     <script>
       var dojoConfig = { 
@@ -15,7 +15,7 @@
       };
     </script>
     <script src="./windy.js"></script>
-    <script src="http://js.arcgis.com/3.8compact/"></script>
+    <script src="https://js.arcgis.com/3.20compact/"></script>
     <script>
       var map, rasterLayer;
       var canvasSupport;
@@ -37,24 +37,17 @@
         // does the browser support canvas? 
         canvasSupport = supports_canvas();
         
-        // hook up elevation slider events
-        esriConfig.defaults.map.basemaps.darkgray = {
-          baseMapLayers: [
-            { url: "http://tiles4.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/World_Dark_Gray_Base_Beta/MapServer" }
-          ],
-          title: "Dark Gray"
-        };
 
         map = new Map("mapCanvas-map", {
           center: [-99.076, 39.132],
           zoom: 3,
-          basemap: "darkgray"
+          basemap: "dark-gray"
         });
 
         map2 = new Map("mapCanvas", {
           center: [-99.076, 39.132],
           zoom: 3,
-          basemap: ""
+          basemap: "dark-gray"
         });
 
         map.on("load", mapLoaded);
