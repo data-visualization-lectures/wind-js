@@ -71,6 +71,8 @@
 
         map.on("load", mapLoaded);
 
+
+
         function mapLoaded() {
 
           // Add raster layer
@@ -103,10 +105,14 @@
           }
         }
 
+
+
         // does the browser support canvas?
         function supports_canvas() {
           return !!document.createElement("canvas").getContext;
         }
+
+
 
         function redraw(){
 
@@ -125,6 +131,9 @@
             );
           },500);
         }
+
+
+        
       });
     </script>
   </head>

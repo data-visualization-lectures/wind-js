@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <title>Wind Animation - Leaflet Version</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+      html,body {
+        width:100%;
+        height:100%;
+        margin: 0;
+        padding: 0px 0 0 0;
+      }
+
+      #mapCanvas {
+        padding:0;
+      }
+
+      #credit {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        color: #fff;
+        font-size: 14px;
+        z-index: 1000;
+      }
+
+      #credit a {
+        color: #08c;
+      }
+
+      #windCanvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+        z-index: 1000;
+      }
+
+    </style>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="./windy.js"></script>
+    <script>
+      var map, windCanvas, windy;
+      var canvasSupport;
+
+      document.addEventListener('DOMContentLoaded', function() {
+        // does the browser support canvas?
+        canvasSupport = supports_canvas();
+
+        if (!canvasSupport) {
+          document.getElementById("mapCanvas").innerHTML = "This browser doesn't support canvas. Visit <a target='_blank' href='http://www.caniuse.com/#search=canvas'>caniuse.com</a> for supported browsers";
+          return;
+        }
+
+        // Initialize Leaflet map
+        map = L.map('mapCanvas', {
+          center: [35.6895, 139.6917],
+          zoom: 5
+        });
+
+        // Add dark basemap
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+          subdomains: 'abcd',
+          maxZoom: 19
+        }).addTo(map);
+
+        // Create wind canvas
+        windCanvas = document.createElement('canvas');
+        windCanvas.id = 'windCanvas';
+        windCanvas.style.position = 'absolute';
+        windCanvas.style.top = '0';
+        windCanvas.style.left = '0';
+        windCanvas.style.pointerEvents = 'none';
+        windCanvas.style.zIndex = '1000';
+        document.getElementById('mapCanvas').appendChild(windCanvas);
+
+        // Set up map event handlers
+        map.on('moveend', redraw);
+        map.on('zoomend', redraw);
+        map.on('resize', function() {
+          resizeCanvas();
+          redraw();
+        });
+
+        // Load wind data
+        fetch('./gfs.json')
+          .then(response => response.json())
+          .then(data => {
+            windy = new Windy({ canvas: windCanvas, data: data });
+            resizeCanvas();
+            redraw();
+          })
+          .catch(error => {
+            console.log("Error loading wind data: ", error);
+          });
+
+      });
+
+      // does the browser support canvas?
+      function supports_canvas() {
+        return !!document.createElement("canvas").getContext;
+      }
+
+      function resizeCanvas() {
+        if (!windCanvas) return;
+        
+        var mapContainer = map.getContainer();
+        windCanvas.width = mapContainer.offsetWidth;
+        windCanvas.height = mapContainer.offsetHeight;
+      }
+
+      function redraw() {
+        if (!windy || !windCanvas) return;
+
+        resizeCanvas();
+        windy.stop();
+
+        var bounds = map.getBounds();
+        var size = map.getSize();
+        
+        setTimeout(function() {
+          windy.start(
+            [[0, 0], [size.x, size.y]],
+            size.x,
+            size.y,
+            [[bounds.getWest(), bounds.getSouth()], [bounds.getEast(), bounds.getNorth()]]
+          );
+        }, 100);
+      }
+
+    </script>
+  </head>
+
+  <body class="">
+     <div id="mapCanvas" style="height:100%;">
+     </div>
+     <div id="credit">Inspired by <a href="https://github.com/cambecc/earth">Earth</a>, data from <a href="http://nomads.ncdc.noaa.gov/data.php?name=access#hires_weather_datasets">GFS</a>, open source on <a href="https://github.com/Esri/wind-js">Github</a></div>
+  </body>
+
+</html>
